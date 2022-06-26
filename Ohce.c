@@ -83,5 +83,4 @@ int main(int argc, char* argv[]) {
         ev_io_set (&stdin_watcher, STDIN_FILENO, EV_WRITE);
         ev_io_start(loop_new, &stdin_watcher);
         ev_loop(loop_new, 0);
-}
-~                          
+}                
