@@ -68,7 +68,7 @@ void thread_func (void* port) {
         ev_loop(loop, 0);
 }
 
-static void my_cb (struct ev_loop *loop, struct ev_io *watcher, int revents) {
+void my_cb (struct ev_loop *loop, struct ev_io *watcher, int revents) {
         status = pthread_barrier_init (&barrier, NULL, 2);
         status = pthread_barrier_wait (&barrier);
         Reverse(buffer);
@@ -83,4 +83,4 @@ int main(int argc, char* argv[]) {
         ev_io_set (&stdin_watcher, STDIN_FILENO, EV_WRITE);
         ev_io_start(loop_new, &stdin_watcher);
         ev_loop(loop_new, 0);
-}                
+}
