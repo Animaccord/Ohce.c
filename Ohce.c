@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <netinet/in.h>
@@ -7,9 +6,6 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <wait.h>
-#include <fcntl.h>
-#include <signal.h>
 
 static pthread_barrier_t barrier;
 static pthread_t thread1;
@@ -72,7 +68,7 @@ void thread_func (void* port) {
         ev_loop(loop, 0);
 }
 
-void my_cb (struct ev_loop *loop, struct ev_io *watcher, int revents) {
+static void my_cb (struct ev_loop *loop, struct ev_io *watcher, int revents) {
         status = pthread_barrier_init (&barrier, NULL, 2);
         status = pthread_barrier_wait (&barrier);
         Reverse(buffer);
