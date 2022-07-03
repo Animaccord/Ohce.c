@@ -74,8 +74,6 @@ void my_cb (struct ev_loop *loop_new, struct ev_async *mysig, int revents) {
         int pthread_mutex_destroy (mutex);
 }
 
-
-
 int main(int argc, char* argv[]) {
         int port = htons(atoi(argv[1]));
         pthread_create (&thread1, NULL, thread_func, port);
