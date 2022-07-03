@@ -1,19 +1,16 @@
-#include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <netinet/in.h>
 #include <ev.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
-static pthread_barrier_t barrier;
+struct ev_loop *loop_new;
+static struct ev_async mysig;
 static pthread_t thread1;
-int status;
+static pthread_mutex_t mutex;
 char buffer [1024];
 
-void Reverse (char *S)
-{
+void Reverse (char *S) {
         int i,j,l;
         char t;
         l=strlen(S);
@@ -26,6 +23,7 @@ void Reverse (char *S)
                 S[j]=t;
                 i++;j--;
         }
+
 }
 
 void read_cb(struct ev_loop *loop, struct ev_io *watcher, int revents) {
@@ -37,7 +35,7 @@ void read_cb(struct ev_loop *loop, struct ev_io *watcher, int revents) {
                 free(watcher);
                 return;
         } else {
-                status = pthread_barrier_wait (&barrier);
+                ev_async_send (loop_new, &mysig);
                 sleep (1);
                 send(watcher->fd, buffer, r, MSG_NOSIGNAL);
                 bzero(&buffer, sizeof(buffer));
@@ -68,19 +66,21 @@ void thread_func (void* port) {
         ev_loop(loop, 0);
 }
 
-void my_cb (struct ev_loop *loop, struct ev_io *watcher, int revents) {
-        status = pthread_barrier_init (&barrier, NULL, 2);
-        status = pthread_barrier_wait (&barrier);
+void my_cb (struct ev_loop *loop_new, struct ev_async *mysig, int revents) {
+        pthread_mutex_init (&mutex, NULL);
+        int pthread_mutex_lock (mutex);
         Reverse(buffer);
+        int pthread_mutex_unlock (mutex);
+        int pthread_mutex_destroy (mutex);
 }
+
+
 
 int main(int argc, char* argv[]) {
         int port = htons(atoi(argv[1]));
         pthread_create (&thread1, NULL, thread_func, port);
-        struct ev_loop *loop_new = ev_loop_new(0);
-        struct ev_io stdin_watcher;
-        ev_init (&stdin_watcher, my_cb);
-        ev_io_set (&stdin_watcher, STDIN_FILENO, EV_WRITE);
-        ev_io_start(loop_new, &stdin_watcher);
+        loop_new = ev_loop_new(0);
+        ev_async_init (&mysig, my_cb);
+        ev_async_start (loop_new, &mysig);
         ev_loop(loop_new, 0);
 }
